@@ -1,0 +1,3 @@
+* PARA 05/10/2022
+- Carga de datos x filtros, al deseleccionar todas las opciones no tiene carga datos, ver el back en el ultima condicion
+- Trabajar el vista principal
