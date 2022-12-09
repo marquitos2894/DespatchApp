@@ -10,6 +10,7 @@ import App from './../App.vue'
 const routes = [
   {
     path: '/',
+    redirect: '/ordenview',
     name: 'app',
     component: App,
     children: [

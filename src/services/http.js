@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useToast } from 'primevue/usetoast';
 
-export const urlbase = 'http://127.0.0.1:8000/api';
+export const urlbase = 'https://apiapporderseg.appconmiciv.com/api';
 
 export function http(){
     
