@@ -38,28 +38,16 @@ export default {
                 {
                     label: 'Home',
                     items: [{
-                        label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/ordenview'
-                    }]
+                        label: 'Ver guia', icon: 'pi pi-fw pi-id-card', to: '/guias'},
+                        {label: 'Emitir guia', icon: 'pi pi-fw pi-check-square', to: '/guiaremisioncreate'}]
                 },
 				{
-					/*label: 'Gestion Productos', icon: 'pi pi-fw pi-sitemap',
+					/*label: 'Documentos', icon: 'pi pi-fw pi-sitemap',
 					items: [
 						{label: 'Categoria', icon: 'pi pi-fw pi-id-card', to: '/categoria'},
 						{label: 'Producto', icon: 'pi pi-fw pi-check-square', to: '/producto'},
                         {label: "Orden Compra", icon: "pi pi-fw pi-bookmark", to: "/orden"}
-                        /*{label: "Invalid State", icon: "pi pi-fw pi-exclamation-circle", to: "/invalidstate"},
-						{label: 'Button', icon: 'pi pi-fw pi-mobile', to: '/button'},
-						{label: 'Table', icon: 'pi pi-fw pi-table', to: '/table'},
-						{label: 'List', icon: 'pi pi-fw pi-list', to: '/list'},
-						{label: 'Tree', icon: 'pi pi-fw pi-share-alt', to: '/tree'},
-						{label: 'Panel', icon: 'pi pi-fw pi-tablet', to: '/panel'},
-						{label: 'Overlay', icon: 'pi pi-fw pi-clone', to: '/overlay'},
-                        {label: "Media", icon: "pi pi-fw pi-image", to: "/media"},
-						{label: 'Menu', icon: 'pi pi-fw pi-bars', to: '/menu'},
-						{label: 'Message', icon: 'pi pi-fw pi-comment', to: '/messages'},
-						{label: 'File', icon: 'pi pi-fw pi-file', to: '/file'},
-						{label: 'Chart', icon: 'pi pi-fw pi-chart-bar', to: '/chart'},
-						{label: 'Misc', icon: 'pi pi-fw pi-circle-off', to: '/misc'},
+
 					]*/
 				},
                 {

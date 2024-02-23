@@ -27,7 +27,7 @@
             </div>
             <div class="field col-12 md:col-3">
             
-                <Dropdown v-model="selectedequipo" :options="equipolist" optionLabel="nombre" :filter="true" placeholder="Select a Equipo" :showClear="true">
+                <Dropdown v-model="selectedequipo" :options="equipolist" optionLabel="Nombre_Equipo" :filter="true" placeholder="Select a Equipo" :showClear="true">
                     <template #value="slotProps">
                         <div class="country-item country-item-value" v-if="slotProps.value">
                             <div>{{slotProps.value.Nombre_Equipo}}</div>
@@ -84,14 +84,14 @@
 					<div class="product-list-item">
 						<!--img src="https://www.primefaces.org/wp-content/uploads/2020/05/placeholder.png" :alt="slotProps"/-->
 						<div class="product-list-detail">
-							<div class="product-name" maxLength="10">{{slotProps.data.proveedor.nombre}}</div>
+							<div class="product-name" maxLength="10" v-tooltip.bottom="slotProps.data.proveedor.nombre">{{LimitCaracter(slotProps.data.proveedor.nombre)}}</div>
 							<div class="product-description">{{slotProps.data.referenciaoc}}</div>
-							<div class="product-description">CORIMAYO | <span class="product-description">{{slotProps.data.equipo.Nombre_Equipo}}</span></div>
+							<div class="product-description">{{slotProps.data.miempresa.abrev}} | <span class="product-description">{{slotProps.data.equipo.Nombre_Equipo}}</span></div>
 							<i class="pi pi-file"></i><span class="product-category">{{slotProps.data.id_oc}}</span>
                             
 						</div>
 						<div class="product-list-action">
-							<span class="product-price">${{slotProps.data.total}}</span>
+							<span class="product-price">{{slotProps.data.sim_moneda}} {{slotProps.data.total}}</span>
 						
                             <router-link :to="`/seguimiento?id_oc=${slotProps.data.id_oc}`"><i class="pi pi-arrow-circle-right" style="font-size: 2rem"></i></router-link>
                             <Tag :severity="slotProps.data.estado.color" >{{slotProps.data.estado.nombre}}</Tag>
@@ -114,18 +114,18 @@
 						</div>
 						<div class="product-grid-item-content">
 							<!--img src="https://www.primefaces.org/wp-content/uploads/2020/05/placeholder.png"/-->
-							<div class="product-name">{{slotProps.data.proveedor.nombre}}</div>
+							<div class="product-name" v-tooltip.bottom="slotProps.data.proveedor.nombre">{{LimitCaracter(slotProps.data.proveedor.nombre)}}</div>
 							<div class="product-description">{{slotProps.data.referenciaoc}}</div>
                             <div class="product-grid-item-top">
                                 <div>
-                                    <span class="product-category">CORIMAYO</span>
+                                    <span class="product-category">{{slotProps.data.miempresa.abrev}}</span>
                                 </div>
 							<span :class="'product-badge status-'+slotProps">{{slotProps.data.equipo.Nombre_Equipo}}</span>
 						    </div>
 							<ProgressBar :value="slotProps.data.porcatencion" showValue="true" /><!--para la barra estadistica de porcentaje de atecion-->
 						</div>
 						<div class="product-grid-item-bottom">
-							<span class="product-price">${{slotProps.data.total}}</span>
+							<span class="product-price">{{slotProps.data.sim_moneda}} {{slotProps.data.total}}</span>
                             <router-link :to="`/seguimiento?id_oc=${slotProps.data.id_oc}`"><i class="pi pi-arrow-circle-right" style="font-size: 2rem"></i></router-link>
 
 							<!--a :href="`/seguimiento?id=${slotProps.data.id_oc}`"  ><i class="pi pi-arrow-circle-right" style="font-size: 2rem"></i></a-->
@@ -318,6 +318,17 @@
                 }       
             }
 
+            const LimitCaracter = (element)=>{
+
+                let texto = element.slice(0,21)
+
+                if(element.length>=21){
+                    texto = texto+'...'
+                }
+                return texto = texto.toUpperCase()
+            }
+
+
             const ToasAlert = (severity,titlesummary,mensaje) => {
                 toast.add({severity:severity, summary: titlesummary, detail:mensaje, group: 'br', life: 4000});
             }
@@ -349,7 +360,7 @@
                  getOrdenes();
             }
 
-            return {quitarequipo,quitarprovedor,getProveedor,getEquipo,refresh,reset,blockedDocument1,pbloaddata,ToasAlert,
+            return {LimitCaracter,quitarequipo,quitarprovedor,getProveedor,getEquipo,refresh,reset,blockedDocument1,pbloaddata,ToasAlert,
                 selectedequipo,equipolist,id_oc,buscar_oc,filtrar,view_selectproveedor,view_selectequipo,proveedor,equipo,
                 dv,lazyParams,totalRecords,onPage,loading,visibleBottom,proveedorlist,selectedproveedor,
                 listaordenes, layout, sortKey,SelectStatus,StatusOptions,value_status,options

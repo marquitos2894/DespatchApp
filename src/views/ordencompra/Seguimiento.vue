@@ -227,12 +227,10 @@
 
                 if(find){
                     console.log(find);
-                    
                     return ToasAlert('error','Item repetido',`El producto ${data.componente}-${data.nparte} ya esta en el carrito`); 
                 }
 
                 carrito.value.push({
-
                     qty_r:  (isNaN(parseInt(data[0])))?data.cant - data.qty_atendida :parseInt(data[0]),
                     id:data.id,
                     oc: data.id_oc,
@@ -240,8 +238,7 @@
                     nparte:data.n_parte,
                     cant:data.cant,
                     qty_restante
-                });
-                
+                });  
             };
 
             const saveRegistros = async (event) =>{
