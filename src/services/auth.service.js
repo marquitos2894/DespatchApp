@@ -12,7 +12,8 @@ export function getPerfil(){
 
 
 export function logout(){
-    return http().post("/auth/logout");
+    localStorage.clear();
+    return http().post("logout");
 }
 
 /*

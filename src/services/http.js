@@ -2,12 +2,12 @@ import axios from "axios";
 
 
 export const urlbase = 'http://corimayoapi_greenter.test/api/';
-//export const urlbase = 'http://localhost/corimayoapi_greenter/public/api/';
+//export const urlbase = 'https://appconmiciv.com/corimayoapi_greenter/public/api/';
 
 export function http(){
 
     let token = localStorage.getItem('access_token');
-    console.log(token);
+    //console.log(token);
     
     //const toast = useToast(); 
     //axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
@@ -38,6 +38,11 @@ export function http(){
             console.log("****** ERROR EN INTER",error.response);
             if(error.response.status === 422){
                 console.log("****** ERROR EN INTER 422");
+                window.location.href = "/login";
+            }
+
+            if(error.response.status === 401){
+                console.log("****** Unauthorized 401");
                 window.location.href = "/login";
             }
 

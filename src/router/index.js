@@ -6,6 +6,7 @@ import Seguimiento from '../views/ordencompra/Seguimiento.vue'
 import Ordenview from '../views/ordencompra/Ordenview.vue'
 import CreateDespatch from '../views/guiaremision/CreateDespatch.vue'
 import ViewsDespatches from '../views/guiaremision/ViewsDespatches.vue'
+import ViewDetailsDespatch from '../views/guiaremision/ViewDetailsDespatch.vue'
 import Login from '../views/auth/Login.vue'
 import App from './../App.vue'
 //import {useAuthStore} from ' pinia 
@@ -43,9 +44,9 @@ const routes = [
         //component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
       },
       {
-        path: '/ordenview',
-        name: 'ordenview',
-        component: Ordenview,
+        path: '/movimientosdetails',
+        name: 'ViewDetailsDespatch',
+        component: ViewDetailsDespatch,
         meta:{
           requiresAuth: true
         }
@@ -78,10 +79,15 @@ router.beforeEach((to,from, next)=>{
         //next()
       //}
       let token = localStorage.getItem('access_token');
-      if(token != null){
+      if(token !== null){
         next()
+        console.log('access token true')
+      }else{
+        console.log('guards')
+        router.push('/Login')
       }
-      next("/Login")
+
+      //next("/Login")
   }
 
   next();

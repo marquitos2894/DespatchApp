@@ -3,10 +3,10 @@ module.exports = defineConfig({
   transpileDependencies: true,
   devServer:{
     //proxy: 'https://apiapporderseg.appconmiciv.com/',
-    allowedHosts: "all",
+    /*allowedHosts: "all",
        client: {
             webSocketURL: 'https://9770-190-236-202-32.ngrok-free.app/'
-       }
+       }*/
 
   }
 })

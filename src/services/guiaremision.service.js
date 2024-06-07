@@ -1,5 +1,28 @@
 import {http} from "./http.js";
 
+
+export function SearchDespatchBasic(data){
+    console.log(data);
+    return http().post('/despatches/search',data)
+}
+
+export function DespatchDetailService(params){
+    console.log(params);
+
+    //let pages = parseInt(params.page)+1;
+    params.page = parseInt(params.page)+1;
+
+    let rows = parseInt(params.rows);
+    let filters = parseInt(params.filters);
+    
+    console.log(params)
+    //console.log(pages, rows);
+    return http().post('/despatches/detailsdespatch', params)
+    //return http().post('/despatches/detailsdespatch?page='+pages+'&rows='+rows,filters)
+}
+
+
+//detailsdespatch
 export function CreateDespatch(){
 
     let datos = new Object();
@@ -80,17 +103,14 @@ export function CreateDespatch(){
     };
     
     //return console.log(datos['company']);
-
     //data = JSON.stringify(data);
-
     return http().post('/despatches/send',{datos})
-
-    
 
 }
 
-export function SaveDespatch(data_create){
 
+
+export function SaveDespatch(data_create){
 
     let bodyFormData = new FormData();
     bodyFormData.append('data',data_create);
@@ -207,7 +227,7 @@ export function DownloadDespatch(data_create){
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', 'test.pdf');
+            link.setAttribute('download', 'guia de remision.pdf');
             document.body.appendChild(link);
             link.click();
         }

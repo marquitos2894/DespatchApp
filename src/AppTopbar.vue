@@ -1,8 +1,8 @@
 <template>
 	<div class="layout-topbar">
-		<router-link to="/ordenview" class="layout-topbar-logo">
-			<img alt="Logo" :src="topbarImage()" />
-			<span>SAKAI</span>
+		<router-link to="/guias" class="layout-topbar-logo">
+			<img :src="topbarImage()" />
+			<span>CORIMAYO</span>
 		</router-link>
 		<button class="p-link layout-menu-button layout-topbar-button" @click="onMenuToggle">
 			<i class="pi pi-bars"></i>
@@ -13,8 +13,9 @@
 			leaveToClass: 'hidden', leaveActiveClass: 'fadeout', hideOnOutsideClick: true}">
 			<i class="pi pi-ellipsis-v"></i>
 		</button>
+
 		<ul class="layout-topbar-menu hidden lg:flex origin-top">
-			<li>
+			<!--li>
 				<button class="p-link layout-topbar-button">
 					<i class="pi pi-calendar"></i>
 					<span>Events</span>
@@ -25,11 +26,11 @@
 					<i class="pi pi-cog"></i>
 					<span>Settings</span>
 				</button>
-			</li>
+			</li-->
 			<li>
+				<SplitButton label="Logout" :model="items" />
 				<button class="p-link layout-topbar-button">
-					<i class="pi pi-user"></i>
-					<span>Profile</span>
+
 				</button>
 			</li>
 		</ul>
@@ -37,22 +38,41 @@
 </template>
 
 <script>
-export default {
-    methods: {
-        onMenuToggle(event) {
-            this.$emit('menu-toggle', event);
-        },
-		onTopbarMenuToggle(event) {
-            this.$emit('topbar-menu-toggle', event);
-        },
-		topbarImage() {
-			return this.$appState.darkTheme ? 'images/logo-white.svg' : 'images/logo-dark.svg';
-		}
-    },
-	computed: {
-		darkTheme() {
-			return this.$appState.darkTheme;
+	import { ref, onMounted, computed } from 'vue';
+	import * as authService from "@/services/auth.service.js";
+	import  router from '@/router';
+	export default {
+
+
+		data(){
+			return {		
+					items: [
+						{
+							label: 'Salir',
+							icon: 'pi pi-power-off',
+							command: async ()  =>  {
+								const {data} = await authService.logout()
+							}
+						}
+					]
+				};
+
+		},
+		methods: {
+			onMenuToggle(event) {
+				this.$emit('menu-toggle', event);
+			},
+			onTopbarMenuToggle(event) {
+				this.$emit('topbar-menu-toggle', event);
+			},
+			topbarImage() {
+				return this.$appState.darkTheme ? 'images/corimayologo.png' : 'images/corimayologo.png'
+			}
+		},
+		computed: {
+			darkTheme() {
+				return this.$appState.darkTheme;
+			}
 		}
 	}
-}
 </script>

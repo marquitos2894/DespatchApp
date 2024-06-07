@@ -1,4 +1,5 @@
 <template>
+    <h1>Nueva Guia remision remitente</h1>
     <ProgressBar v-if="(loading)" mode="indeterminate" style="height: 6px"></ProgressBar>
     <div class="card">
         <Chip class="pl-0 pr-3">
@@ -44,11 +45,15 @@
                 <InlineMessage v-if="validate_pesoTotal">{{message_pesoTotal}}</InlineMessage>
             </div>
             <div class="field col-12 md:col-4">
-                <label for="ssn">Unidad</label>
-                <Dropdown v-model="unidadmedida" :options="[{id:'KGM',name:'Kilogramo'}]" optionLabel="name" />
+                <label for="ssn">Unidad de medida</label>
+                <Dropdown v-model="unidadmedida" :options="[{id:'KGM',name:'Kilogramo'},{id:'TNE',name:'Tonelada'}]" optionLabel="name" />
+            </div>
+            <div class="field col-12 md:col-4">
+                <label for="ssn">Area</label>
+                <Dropdown v-model="areatrabajo" :options="[{name:'Mantenimiento'},{name:'Operaciones'}]" optionLabel="name" maxlength="35"/>
             </div>
         </div>
-        <Chip ref="DatosTranspista" class="pl-0 pr-3">
+        <Chip id="chiptransportista" ref="DatosTranspista" class="pl-0 pr-3">
             <span class="bg-primary border-circle w-2rem h-2rem flex align-items-center justify-content-center">3</span>
             <span class="ml-2 font-medium">Datos de transportista</span>
         </Chip>
@@ -56,52 +61,55 @@
         <div class="p-fluid formgrid grid">
             <div class="col-fixed" style="width:30%">
                 <div class="p-3 border-round-sm ">
-                    <span  class="ml-2 font-medium font-bold">Vehiculo</span>
+                    <span  class="ml-2 font-medium font-bold">Vehiculo <Button label="Add" style="padding: .1em .5em;width:20%;height:20%" @click="modaladdvehiculo = true" /> </span>
                     <hr>
-                    <div class="p-fluid formgrid grid">
-                        <div class="field col-10 md:col-12">
+                    <div  v-if="vehiculo.length>0" class="p-fluid formgrid grid">
+                        <div  class="field col-10 md:col-12">
                             <label for="ssn">Placa</label>
-                            <InputText  v-model="placa" placeholder="Placa"/>
-                            <InlineMessage v-if="validate_placa">{{message_placa}}</InlineMessage>
+                            <InputText v-model="vehiculo[0].placa" readonly  placeholder="Placa"></InputText>
+                           
                         </div>
                         <div class="field col-12 md:col-12">
                             <label for="ssn">MTC</label>
-                            <InputText v-model="mtcCirculacion" placeholder="MTC" maxlength="20"/>
+                            <InputText  v-model="vehiculo[0].mtcNroAutorizacion" readonly  placeholder="MTC" maxlength="20"/>
                         </div>
                     </div>
+                    <Button type="button"  label="vehiculos"  icon="pi pi-car" :badge="(vehiculo.length<1)?'0':vehiculo.length" @click="toggle" />
                 </div> 
             </div>
             <div class="col" >
                 <div class="p-3 border-round-sm">
-                    <span class="ml-2 font-medium font-bold">Conductor</span>
+                    <span  class="ml-2 font-medium font-bold">Conductor <Button label="Add" style="padding: .1em .5em;width:15%;height:20%" @click="modaladdconductor = true" /> </span>  
                     <hr>
-                    <div class="p-fluid formgrid grid">
+                    <div v-if="conductor.length>0" class="p-fluid formgrid grid">
                         <div class="field col-12 md:col-6">
-                            <Dropdown v-model="tipodocConductor" :options="[{id:'1',name:'DNI'},{id:'4',name:'Carnet Extranjeria'}]" optionLabel="name" :editable="false" maxlength="35"/>
+                            <Dropdown v-model="conductor[0].tipoDoc" :options="[{id:'1',name:'DNI'}]" optionLabel="name" readonly maxlength="35"/>
                         </div>
                         <div class="field col-12 md:col-6">
-                            <InputText v-model="nroDocConductor" placeholder="Nro Documento" maxlength="20"/>
-                            <InlineMessage v-if="validate_nrodocConductor">{{message_nrodocConductor}}</InlineMessage>
+                            <InputText v-model="conductor[0].nroDoc" placeholder="Nro Documento" readonly maxlength="20"/>
+                            
                         </div>
                     </div>
-                    <div class="p-fluid formgrid grid">
+                    <div v-if="conductor.length>0" class="p-fluid formgrid grid">
                         <div class="field col-12 md:col-6">
-                            <InputText v-model="nombreConductor" placeholder="Nombre"/>
-                            <InlineMessage v-if="validate_nombreConductor">{{message_nombreConductor}}</InlineMessage>
+                            <InputText v-model="conductor[0].nombres" readonly placeholder="Nombre"/>
+                            
                         </div>
                         <div class="field col-12 md:col-6">
             
-                            <InputText v-model="apellidosConductor" placeholder="Apellidos" maxlength="20"/>
-                            <InlineMessage v-if="validate_apellidoConductor">{{message_apellidoConductor}}</InlineMessage>
+                            <InputText v-model="conductor[0].apellidos" readonly placeholder="Apellidos" maxlength="20"/>
+                            
                         </div>
                     </div> 
-                    <div  class="p-fluid formgrid grid">
+                    <div v-if="conductor.length>0"  class="p-fluid formgrid grid">
                         <div class="field col-12 md:col-12">
-                            <InputText v-model="licenciaConductor" placeholder="Licencia" maxlength="20"/>
-                            <InlineMessage v-if="validate_licenciaConductor">{{message_licenciaConductor}}</InlineMessage>
+                            <InputText v-model="conductor[0].licencia" readonly placeholder="Licencia" maxlength="20"/>
+                            
                         </div>
                     </div>
+                    <Button type="button"  label="conductores"  icon="pi pi-users" :badge="(conductor.length<1)?'0':conductor.length" @click="toggleConductor" />              
                 </div>
+                
             </div>
 
             <div v-if="modTraslado.id == '01' " class="col">
@@ -119,7 +127,7 @@
                     </div>
                     <div class="p-fluid formgrid grid">
                         <div class="field col-12 md:col-12">
-                            <InputText v-model="rzSocialTransp" placeholder="Nombre o Razon social" maxlength="20"/>
+                            <InputText v-model="rzSocialTransp" placeholder="Nombre o Razon social" maxlength="60"/>
                             <InlineMessage v-if="validate_rzSocialTransp">{{message_rzSocialTransp}}</InlineMessage>
                         </div>
                     </div> 
@@ -138,7 +146,7 @@
             <span class="bg-primary border-circle w-2rem h-2rem flex align-items-center justify-content-center">4</span>
             <span class="ml-2 font-medium">Punto partida</span>
         </Chip>
-        <Dropdown v-model="anexoPartida" @change="datosEnvio('partida')" :options="establecimientos" showClear optionLabel="nombre" placeholder="Unidad Partida" size="small" class="w-full md:w-14rem"/>
+        <Dropdown v-model="anexoPartida" @change="datosEnvio('partida')" :options="establecimientos"  optionLabel="nombre" placeholder="Unidad Partida" size="small" class="w-full md:w-14rem"/>
         <hr>
         <div class="p-fluid formgrid grid">
             <div class="field col-12 md:col-6">
@@ -147,12 +155,12 @@
                 <InlineMessage v-if="validate_direccionpartida">{{message_direccionpartida}}</InlineMessage>
             </div>
             <div class="field col-12 md:col-3">
-                <label for="ssn">Ubigueo</label>
-                <InputText v-model="ubigueoPartida" placeholder="Ubigeo" maxlength="20" disabled/>
-                <InlineMessage v-if="validate_ubigueopartida">{{message_ubigueopartida}}</InlineMessage>
+                <label for="ssn">ubigeo</label>
+                <InputText v-model="ubigeoPartida" placeholder="Ubigeo" maxlength="20" disabled/>
+                <InlineMessage v-if="validate_ubigeopartida">{{message_ubigeopartida}}</InlineMessage>
             </div>
             <div class="field col-12 md:col-3">
-                <label for="ssn">Unidad</label>
+                <label for="ssn">Und. Operativa</label>
                 <InputText v-model="unidadMinPartida" placeholder="Unidad Minera" maxlength="20" disabled/>
             </div>
         </div>
@@ -160,7 +168,7 @@
             <span class="bg-primary border-circle w-2rem h-2rem flex align-items-center justify-content-center">5</span>
             <span class="ml-2 font-medium">Punto Llegada</span>
         </Chip>
-        <Dropdown v-model="anexoLlegada" @change="datosEnvio('llegada')" :options="establecimientos" showClear optionLabel="nombre" placeholder="Unidad Llegada" class="w-full md:w-14rem"/>
+        <Dropdown v-model="anexoLlegada" @change="datosEnvio('llegada')" :options="establecimientos"  optionLabel="nombre" placeholder="Unidad Llegada" class="w-full md:w-14rem"/>
         <hr>
         <div class="p-fluid formgrid grid">
             <div class="field col-12 md:col-6">
@@ -169,12 +177,12 @@
                 <InlineMessage v-if="validate_direccionllegada">{{message_direccionllegada}}</InlineMessage>
             </div>
             <div class="field col-12 md:col-3">
-                <label for="ssn">Ubigueo</label>
-                <InputText v-model="ubigueoLlegada" placeholder="Ubigeo" maxlength="20" disabled/>
-                <InlineMessage v-if="validate_ubigueollegada">{{message_ubigueollegada}}</InlineMessage>
+                <label for="ssn">ubigeo</label>
+                <InputText v-model="ubigeoLlegada" placeholder="Ubigeo" maxlength="20" disabled/>
+                <InlineMessage v-if="validate_ubigeollegada">{{message_ubigeollegada}}</InlineMessage>
             </div>
             <div class="field col-12 md:col-3">
-                <label for="ssn">Unidad</label>
+                <label for="ssn">Und. Operativa</label>
                 <InputText v-model="unidadMinLlegada" placeholder="Unidad Minera" maxlength="20" disabled/>
                 
             </div>
@@ -209,17 +217,22 @@
                             <InputText type="text" v-model="codigo" placeholder="Codigo"  />
                         </template>
                     </Column>
-                    <Column field="" header="" style="width: 15%">
+                    <!--Column field="" header="" style="width: 15%">
                         <template #body="slotProps">
-                            <!--InputText type="text" v-model="slotProps.data.equipo" placeholder="Equipo"  /-->
+                           
                             <MultiSelect v-model="selectedEquipos" :options="ListEquipos" filter optionLabel="name" placeholder="Equipos"
                                 :maxSelectedLabels="3"   />
+                        </template>
+                    </Column-->
+                    <Column field="selectedEquipos" header="" style="width: 13%">
+                        <template #body="slotProps">
+                                <Dropdown v-model="selectedEquipos" showClear :options="ListEquipos" filter   optionLabel="name" placeholder="Equipo" />
                         </template>
                     </Column>
                     <Column field="" header="" style="width: 13%">
                         <template #body="slotProps">
                             <div class="p-inputgroup">
-                                <Dropdown v-model="selectedumUnitario" :options="umUnitarioList" showClear optionLabel="name" placeholder="Medida" />
+                                <Dropdown v-model="selectedumUnitario" :options="umUnitarioList" filter optionLabel="name" placeholder="Medida" />
                             </div>
                         </template>
                     </Column>
@@ -236,25 +249,62 @@
             </div>
         </div>
         
-        <DataTable id="table_details" :value="details" size="small" tableStyle="width: 100%">
-            <Column header="#" headerStyle="width:3rem">
+        <DataTable id="table_details" :value="details" v-model:editingRows="editingRows" editMode="row" dataKey="id" @row-edit-save="onRowEditSave" size="small" tableStyle="width: 100%"
+        :pt="{
+                table: { style: 'min-width: 40rem' },
+                column: {
+                    bodycell: ({ state }) => ({
+                        style:  state['d_editing']&&'padding-top: 0.6rem; padding-bottom: 0.6rem'
+                    })
+                }
+            }"
+        >
+            <Column header="#" style="width: 5%">
                 <template #body="slotProps">
                     {{ slotProps.index + 1 }}
                 </template>
             </Column>
-            <Column field="descripcion" header="DESCRIPCION"></Column>
-            <Column field="codigo" header="CODIGO"></Column>
-            <Column field="equipo" header="EQUIPO"></Column>
-            <Column field="cantidad" header="QTY"></Column>
-            <Column field="unidad" header="UM"></Column>
-            <Column field="Opc" header="OPC">
+            <Column field="descripcion" header="DESCRIPCION" style="width: 14%">
+                <template #editor="{ data, field }">
+                    <InputText v-model="data[field]" />
+                </template>
+            </Column>
+            <Column field="codigo" header="CODIGO" style="width: 12%">
+                <template #editor="{ data, field }">
+                    <InputText v-model="data[field]" />
+                </template>   
+            </Column>
+            <Column field="equipo" header="EQUIPO" style="width: 12%">
+                <template #editor="{ data, field }" #body="slotProps">
+                    <Dropdown v-model="data[field]" showClear :options="ListEquipos" filter optionLabel="name" optionValue="name"  placeholder="Equipos" :maxSelectedLabels="3">
+                        <template #option="slotProps">
+                            <Tag :value="slotProps.option.name" />
+                        </template>
+                    </Dropdown>
+                </template>
+            </Column>
+            <Column field="cantidad" header="QTY" style="width: 7%" >
+                <template #editor="{ data, field }">
+                    <InputText v-model="data[field]" style="width: 100%" />
+                </template>   
+            </Column>
+            <Column field="unidad" header="UM" style="width: 12%">
+                <template #editor="{ data, field }">
+                    <Dropdown v-model="data[field]" :options="umUnitarioList" filter optionLabel="name" optionValue="id" placeholder="Medida" >
+                        <template #option="slotProps">
+                            <Tag :value="slotProps.option.name"  />
+                        </template>
+                    </Dropdown>
+                </template>
+            </Column>
+            <Column field="Opc" header="OPC" style="width: 7%">
                 <template #body="slotProps">
                     <div class="col-12 md:col-3">
-                        <a href="#table_details" @click="RemoveItem(slotProps.data)"><i class="pi pi-times"></i></a>
+                        <a href="#table_details" @click="RemoveItem(slotProps.data)" style="width: 80%"><i class="pi pi-times"></i></a>
                     </div>
                 </template>
             </Column>
-            
+            <Column :rowEditor="true" style="width: 5%;" bodyStyle="text-align:center"></Column>
         </DataTable>
         <div class="p-fluid formgrid grid" style="display: flex; justify-content: center;">
             <img v-if="details.length<1" src="images/createdespatch/empty-box-big.svg" height="30%" width="30%" alt="" >
@@ -263,12 +313,11 @@
         <ProgressBar mode="indeterminate" v-if="(loading)" style="height: 6px"></ProgressBar>
     </div>
     
-
     <Button label="Guardar" severity="info" @click="showAlertPrev('Guia de Remision','Deseas guardar el documento?')" icon="pi pi-check" iconPos="right" />
 
     <Dialog v-model:visible="visible" modal header="Importar archivo excel" :style="{ width: '25rem' }">
         <input type="file" id="loadfilexcel" accept=".xlsx"><br>
-        <Button  label="Cargar" icon="pi pi-upload" size="small" @click="readfile" />  
+        <Button  label="Cargar" icon="pi pi-upload" size="small" @click="readfile()" />  
     </Dialog>
 
     <Toast position="bottom-center" group="bc" @close="onClose">
@@ -294,8 +343,161 @@
         </template>
     </Toast>
 
+    <Dialog v-model:visible="modaladdvehiculo" modal header="Agregar vehiculo" :style="{ width: '25rem' }">
+    
+            <div class="p-fluid formgrid grid">
+                <div class="field col-12 md:col-12">
+                    <span class="font-medium text-900 block mb-2">Placa</span>
+                    <InputText  v-model="placa" ></InputText>
+                    <InlineMessage v-if="validate_placa">{{message_placa}}</InlineMessage>
+                </div>
+            </div>
+            <div class="p-fluid formgrid grid">
+                <div class="field col-12 md:col-12">
+                    <span class="font-medium text-900 block mb-2">Autorizacion MTC</span>
+                    <InputGroup>
+                        <InputText v-model="mtcNroAutorizacion" ></InputText>
+                    </InputGroup>
+                </div>
+            </div>
+       
+        <div class="flex justify-content-end gap-2">
+            <Button type="button" label="Cancel"  severity="secondary" @click="modaladdvehiculo = false;validate_placa = false;placa ='';mtcNroAutorizacion = ''"></Button>
+            <Button type="button" label="Agregar"  @click="addVehiculo()" ></Button>
+        </div>
+    </Dialog>
+
+
+    <OverlayPanel ref="op" :style="{ width: '50rem' }">
+        <DataTable id="table_details" :value="vehiculo" v-model:editingRows="editingRows" editMode="row" dataKey="id" @row-edit-save="onRowEditSave_vehiculo" size="small" tableStyle="width: 100%"
+        :pt="{
+                
+                column: {
+                    bodycell: ({ state }) => ({
+                        style:  state['d_editing']&&'padding-top: 0.3rem; padding-bottom: 0.3rem'
+                    })
+                }
+            }"
+        >
+            <Column header="#" style="width: 5%">
+                <template #body="slotProps">
+                    {{ slotProps.index + 1 }}
+                </template>
+            </Column>
+            <Column field="placa" header="PLACA" style="width: 8%">
+                <template #editor="{ data, field }">
+                    <InputText v-model="data[field]" />
+                </template>
+            </Column>
+            <Column field="mtcNroAutorizacion" header="MTC AUT." style="width: 8%">
+                <template #editor="{ data, field }">
+                    <InputText v-model="data[field]" />
+                </template>   
+            </Column>
+            <Column field="tipo" header="TIPO" style="width: 8%"> 
+            </Column>
+            <Column field="Opc" header="OPC" style="width: 7%">
+                <template #body="slotProps">
+                    <div class="col-12 md:col-3">
+                        <a href="javascript:void(0);" @click="removeitemvehiculo(slotProps.data)" style="width: 80%"><i class="pi pi-times"></i></a>
+                    </div>
+                </template>
+            </Column>              
+            <Column :rowEditor="true" style="width: 5%;" bodyStyle="text-align:center"></Column>
+        </DataTable>
+    </OverlayPanel>
+
+
+    <Dialog v-model:visible="modaladdconductor" modal header="Agregar conductor" :style="{ width: '25rem' }">
+        <div class="p-3 border-round-sm">
+ 
+            <div class="p-fluid formgrid grid">
+                <div class="field col-12 md:col-6">
+                    <Dropdown v-model="tipodocConductor" :options="[{id:'1',name:'DNI'}]" optionLabel="name" :editable="false" maxlength="35"/>
+                </div>
+                <div class="field col-12 md:col-6">
+                    <InputText v-model="nroDocConductor" placeholder="Nro Documento" maxlength="20"/>
+                    <InlineMessage v-if="validate_nrodocConductor">{{message_nrodocConductor}}</InlineMessage>
+                </div>
+            </div>
+            <div class="p-fluid formgrid grid">
+                <div class="field col-12 md:col-6">
+                    <InputText v-model="nombreConductor" placeholder="Nombre"/>
+                    <InlineMessage v-if="validate_nombreConductor">{{message_nombreConductor}}</InlineMessage>
+                </div>
+                <div class="field col-12 md:col-6">
+    
+                    <InputText v-model="apellidosConductor" placeholder="Apellidos" maxlength="20"/>
+                    <InlineMessage v-if="validate_apellidoConductor">{{message_apellidoConductor}}</InlineMessage>
+                </div>
+            </div> 
+            <div  class="p-fluid formgrid grid">
+                <div class="field col-12 md:col-12">
+                    <InputText v-model="licenciaConductor" placeholder="Licencia" maxlength="20"/>
+                    <InlineMessage v-if="validate_licenciaConductor">{{message_licenciaConductor}}</InlineMessage>
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-content-end gap-2">
+            <Button type="button" label="Cancel" severity="secondary" @click="cancelConductor()"></Button>
+            <Button type="button" label="Agregar"  @click="addConductor()" ></Button>
+        </div>
+    </Dialog>
+
+    <OverlayPanel ref="op_conductor" :style="{ width: '70rem' }">
+        <DataTable  :value="conductor" v-model:editingRows="editingRows" editMode="row" dataKey="id" @row-edit-save="onRowEditSave_conductor" size="small" tableStyle="width: 100%"
+        :pt="{
+                
+                column: {
+                    bodycell: ({ state }) => ({
+                        style:  state['d_editing']&&'padding-top: 0.3rem; padding-bottom: 0.3rem'
+                    })
+                }
+            }"
+        >
+            <Column header="#" style="width: 5%">
+                <template #body="slotProps">
+                    {{ slotProps.index + 1 }}
+                </template>
+            </Column>
+            <Column field="tipoDoc.name" header="DOCUMENTO" style="width: 8%">
+            </Column>
+            <Column field="nroDoc" header="# DOCUMENTO" style="width: 8%">
+                <template #editor="{ data, field }">
+                    <InputText v-model="data[field]" />
+                </template>   
+            </Column>
+            <Column field="nombres" header="NOMBRES" style="width: 8%">
+                <template #editor="{ data, field }">
+                    <InputText v-model="data[field]" />
+                </template>   
+            </Column>
+            <Column field="apellidos" header="APELLIDOS" style="width: 8%">
+                <template #editor="{ data, field }">
+                    <InputText v-model="data[field]" />
+                </template>   
+            </Column>
+            <Column field="licencia" header="LICENCIA" style="width: 8%">
+                <template #editor="{ data, field }">
+                    <InputText v-model="data[field]" />
+                </template>   
+            </Column>
+            <Column field="tipo" header="TIPO" style="width: 8%">
+            </Column>
+            <Column field="Opc" header="OPC" style="width: 7%">
+                <template #body="slotProps">
+                    <div class="col-12 md:col-3">
+                        <a href="#chiptransportista" @click="removeitemconductor(slotProps.data)" style="width: 80%"><i class="pi pi-times"></i></a>
+                    </div>
+                </template>
+            </Column>               
+            <Column :rowEditor="true" style="width: 5%;" bodyStyle="text-align:center"></Column>
+        </DataTable>
+    </OverlayPanel>
+
+
     <BlockUI :blocked="blocked" fullScreen />
-    {{ new Date(Date.now()) }}
+
  </template>
 
 <script setup>
@@ -311,12 +513,14 @@
     import ProgressBar from 'primevue/progressbar';
     import BlockUI from 'primevue/blockui';
 
+    const editingRows = ref([]);
 
     const visible = ref(false);
     const visibleAlert = ref(false);
 
     const confirm = useConfirm();
     const toast = useToast();
+    const op = ref(); const op_conductor = ref();
 
     const value = ref('Off');
     const options = ref(['Off', 'On']);
@@ -324,8 +528,8 @@
     //const fechaactual = new Date();
 
     let fechaEmision = ref(new Date(Date.now()));
-
     const hoy = new Date(new Date(Date.now()).toISOString());
+
     const id_artificial = ref(0);//id para agregar al objecto details
 
     //Tipo de documento: 09 GUIA DE REMISION datos duros
@@ -338,8 +542,8 @@
     var datos_sucursal = ref(JSON.parse(localStorage.getItem("sucursal")));
 
 
-    //Surcusal que emite: Surquillo : 0 | Chorrillos : 1
-    let idsucursal = ref(datos_sucursal.value['1'].id);
+    //Surcusal que emite: Surquillo : 1 | Chorrillos : 0
+    let idsucursal = ref(datos_sucursal.value['0'].id);
 
     //company
     let idCompany = ref(datos_company.value['id']);
@@ -347,7 +551,7 @@
     let companyruc = ref(datos_company.value['ruc']);
     //let companynamecomercial = ref();
 
-    let companyubigueo = ref(datos_AddressCompany.value[0].ubigueo);
+    let companyubigeo = ref(datos_AddressCompany.value[0].ubigeo);
     let companydepartamento = ref(datos_AddressCompany.value[0].departamento);
     let companyprovincia = ref(datos_AddressCompany.value[0].provincia);
     let companydistrito = ref(datos_AddressCompany.value[0].distrito);
@@ -369,19 +573,20 @@
     let fechainic = ref(hoy);
 
     let pesoTotal = ref(1.00);
-    let unidadmedida = ref({id:'KGM',name:'Kilogramo'});
+    let unidadmedida = ref({id:'KGM',name:'Kilogramo'},{id:'TNE',name:'Tonelada'});
+    let areatrabajo = ref({name:'Mantenimiento'});        
 
     //3 Datos de trasnportista
     //privado
     // 3.1 vehiculo
-    let placa = ref('AUN921');
-    let mtcCirculacion  = ref('');
+    let placa = ref('');
+    let mtcNroAutorizacion = ref('');
     // 3.2 conductor
     let tipodocConductor = ref({id:'1',name:'DNI'});
-    let nroDocConductor = ref('73391427');
-    let nombreConductor = ref('Marcos');
-    let apellidosConductor = ref('Chacaliaza');
-    let licenciaConductor = ref('Q73391427');
+    let nroDocConductor = ref();
+    let nombreConductor = ref();
+    let apellidosConductor = ref('');
+    let licenciaConductor = ref('');
     //publico
     let tipoDocTransp = ref({id:'6', name:'RUC'});
     let numDocTransp = ref('');
@@ -401,7 +606,7 @@
     let anexoPartida = ref('');
 
     let direccionPartida = ref('');
-    let ubigueoPartida = ref('');
+    let ubigeoPartida = ref('');
     let unidadMinPartida = ref('');
     let codLocalpartida = ref('');
     let rucPartida = ref('');
@@ -409,7 +614,7 @@
     //5 Puntos de llegada
     let anexoLlegada = ref('');
     let direccionLlegada = ref('');
-    let ubigueoLlegada = ref('');
+    let ubigeoLlegada = ref('');
     let unidadMinLlegada = ref('');
     let codLocalLlegada = ref('');
     let rucLlegada = ref('');
@@ -455,15 +660,15 @@
     const validate_direccionpartida = ref(false);
     const message_direccionpartida = ref('');
 
-    const validate_ubigueopartida = ref(false);
-    const message_ubigueopartida = ref('');
+    const validate_ubigeopartida = ref(false);
+    const message_ubigeopartida = ref('');
 
     const DatosDireccionLlegada = ref(false)
     const validate_direccionllegada = ref(false);
     const message_direccionllegada = ref('');
 
-    const validate_ubigueollegada = ref(false);
-    const message_ubigueollegada = ref('');
+    const validate_ubigeollegada = ref(false);
+    const message_ubigeollegada = ref('');
 
     const DatosProductos = ref(false);
     const validate_detalleproductos = ref(false);
@@ -476,6 +681,12 @@
     const param_qty = ref(0);
 
     let products = ref([]);
+    let vehiculo = ref([]);
+    let conductor = ref([]);
+
+    const modaladdvehiculo = ref(false);
+    const modaladdconductor = ref(false);
+
 
     const ListEquipos = ref([]);
     const selectedEquipos = ref();
@@ -493,6 +704,7 @@
             {id:'PK',name:'PAQUETE'},
             {id:'SA',name:'SACO'}
         ]);
+
     const selectedumUnitario = ref({id:'NIU',name:'UNIDAD'});
 
     const blocked = ref(false);
@@ -501,7 +713,6 @@
     const descripcion = ref();
     const codigo = ref();
     const cantidad = ref();
-
 
     products = [
         {          
@@ -516,33 +727,70 @@
     let establecimientos =ref([
         { 
             codLocal: "0011",direccion: "CAL.ALBERT EINSTEIN NRO. 334 URB. LA CALERA DE LA MERCED LIMA - LIMA - SURQUILLO",
-            ubigueo: "150141", nombre: "Oficina Surquillo" , ruc:'20513963085'
+            ubigeo: "150141", nombre: "Oficina Surquillo" , ruc:'20513963085'
         },
         { 
             codLocal: "0006",direccion: "CAL.MACHU PICCHU MZA. L LOTE. 09 URB. SAN JUAN BAUTISTA DE VILL LIMA - LIMA - CHORRILLOS",
-            ubigueo: "150108", nombre: "Taller Chorrillos" , ruc:'20513963085'
+            ubigeo: "150108", nombre: "Almacen Chorrillos" , ruc:'20513963085'
         },
         { 
             codLocal: "0010",direccion: "CAR.CHAGUAL NRO. S/N LA LIBERTAD - PATAZ - PATAZ",
-            ubigueo: "130809", nombre: "Unidad Poderosa", ruc:'20513963085'
+            ubigeo: "130809", nombre: "Unidad Poderosa", ruc:'20513963085'
         },
         { 
             codLocal: "0007",direccion: "CAR. TAYABAMBA NRO. S/N ANX. RETAMAS LA LIBERTAD - PATAZ - PARCOY",
-            ubigueo: "130808", nombre: "Unidad Horizonte",ruc:'20513963085'
+            ubigeo: "130808", nombre: "Unidad Horizonte",ruc:'20513963085'
         },
         { 
             codLocal: "0008",direccion: "JR. TUPAC AMARU NRO. S/N LIMA - YAUYOS - ALIS",
-            ubigueo: "151002", nombre: "Unidad Corona",ruc:'20513963085'
+            ubigeo: "151002", nombre: "Unidad Corona",ruc:'20513963085'
         },
         { 
             codLocal: "0009",direccion: "CAR. LIRCAY NRO. 10 HUANCAVELICA - HUANCAVELICA - HUACHOCOLPA",
-            ubigueo: "090106", nombre: "Unidad Kolpa",ruc:'20513963085'
+            ubigeo: "090106", nombre: "Unidad Kolpa",ruc:'20513963085'
         }
     ]);
 
     onMounted(async ()=>{
         machineList()
     });
+
+    const toggle = (event) => {
+        op.value.toggle(event);
+    }
+
+    const toggleConductor = (event) => {
+        op_conductor.value.toggle(event);
+    }
+
+    const onRowEditSave = (event) => {
+        let { newData, index, field } = event;
+        console.log(newData)
+        //console.log(newData.nuevo_equipo)
+        
+        /*if(newData.nuevo_equipo !== undefined) {
+            let arr_nuevoequipo = newData.nuevo_equipo.map(function (data){return data.name.toString()})
+            console.log(arr_nuevoequipo.toString());
+            newData.equipo = arr_nuevoequipo.toString();
+            console.log(newData)
+        }*/
+        details.value[index] = newData;
+        //VALIDAR QUE EL CAMPO NO SEA VACIO   
+    };
+
+    const onRowEditSave_vehiculo = (event) => {
+        let { newData, index, field } = event;
+        vehiculo.value[index] = newData;
+        //VALIDAR QUE EL CAMPO NO SEA VACIO   
+    };
+
+    const onRowEditSave_conductor = (event) => {
+        let { newData, index, field } = event;
+        conductor.value[index] = newData;
+        //VALIDAR QUE EL CAMPO NO SEA VACIO   
+    };
+
+
 
     const savedespatch = async () =>{
         validateClean();
@@ -556,7 +804,7 @@
         // VALIDACIONES
         if (pesoTotal.value == 0 || pesoTotal.value.length < 1){
             DatosdeEnvio.value.$el.scrollIntoView()   
-            message_pesoTotal.value = `El peso no puede ser "0" o menor a 1`;        
+            message_pesoTotal.value = `El peso debe ser mayor que "0" `;        
             return validate_pesoTotal.value = true;
         }
 
@@ -570,42 +818,7 @@
             return validate_fechainic.value = true;
         }   
         
-        if((placa.value.length>=9 || placa.value.length<=5) || !regex.test(placa.value)) {
-            DatosTranspista.value.$el.scrollIntoView()
-            message_placa.value = '(*) Campo obligatorio:Sólo alfanumérico de 6 a 8 caracteres (solo se permiten letras mayúsculas y números, no espacios en blanco ni guion, tampoco se permite solamente ceros).';
-            return validate_placa.value = true;
-        }
-        //DOCUMENTO CONDUCTOR
-        
-        if(tipodocConductor.value.name == 'DNI' && (nroDocConductor.value.length <= 7 || nroDocConductor.value.length >= 9 ) || !regexNum.test(nroDocConductor.value) ){
-            DatosTranspista.value.$el.scrollIntoView()
-            message_nrodocConductor.value = '(*) Campo obligatorio: El dni debe tener 8 caracteres y solo numeros';
-            return validate_nrodocConductor.value = true; 
-        }else if(tipodocConductor.value.name !== 'DNI' && (nroDocConductor.value.length <= 7 || nroDocConductor.value.length >= 10 ) || !regexNum.test(nroDocConductor.value)){
-            DatosTranspista.value.$el.scrollIntoView()
-            message_nrodocConductor.value = '(*) Campo obligatorio: El nro de documento no debe  y solo numero';
-            return validate_nrodocConductor.value = true;
-        }
-        //NOMBRE Y APELLIDO DE CONDUCTOR
-        if(nombreConductor.value.length<1){
-            DatosTranspista.value.$el.scrollIntoView()
-            message_nombreConductor.value = '(*) Campo obligatorio:Ingresar el nombre del conductor';
-            return validate_nombreConductor.value = true; 
-        }
 
-        if(apellidosConductor.value.length<1){
-            DatosTranspista.value.$el.scrollIntoView()
-            message_apellidoConductor.value = '(*) Campo obligatorio:Ingresar el apellido del conductor';
-            return validate_apellidoConductor.value = true; 
-        }   
-
-        //LICENCIA CONDUCTOR
-        console.log(licenciaConductor.value,licenciaConductor.value.length);
-        if(licenciaConductor.value.length <= 8 || licenciaConductor.value.length >= 11 || !regex.test(licenciaConductor.value) ){
-            DatosTranspista.value.$el.scrollIntoView()
-            message_licenciaConductor.value = '(*) Campo obligatorio: El nro de licencia debe ser Alfanumerico y de 9 a 10 caracteres';
-            return validate_licenciaConductor.value = true; 
-        }
 
         // SI MODALIDAD DE TRASLADO ES PUBLICO
         if(modTraslado.value.id == '01'){
@@ -638,11 +851,11 @@
             return validate_direccionpartida.value = true; 
         }
 
-        console.log(ubigueoPartida.value.length);
-        if(ubigueoPartida.value.length<1){
+        console.log(ubigeoPartida.value.length);
+        if(ubigeoPartida.value.length<1){
             DatosDireccionPartida.value.$el.scrollIntoView()
-            message_ubigueopartida.value = '(*) Campo obligatorio:Ingresar el ubigueo correcto';
-            return validate_ubigueopartida.value = true; 
+            message_ubigeopartida.value = '(*) Campo obligatorio:Ingresar el ubigeo correcto';
+            return validate_ubigeopartida.value = true; 
         }
 
         //DIRECCION de Llegada DatosDireccionLlegada
@@ -653,11 +866,11 @@
             return validate_direccionllegada.value = true; 
         }
 
-        console.log(ubigueoLlegada.value.length);
-        if(ubigueoLlegada.value.length<1){
+        console.log(ubigeoLlegada.value.length);
+        if(ubigeoLlegada.value.length<1){
             DatosDireccionLlegada.value.$el.scrollIntoView()
-            message_ubigueollegada.value = '(*) Campo obligatorio: El nro de licencia debe ser Alfanumerico y de 9 a 10 caracteres';
-            return validate_ubigueollegada.value = true; 
+            message_ubigeollegada.value = '(*) Campo obligatorio: El nro de licencia debe ser Alfanumerico y de 9 a 10 caracteres';
+            return validate_ubigeollegada.value = true; 
         }
 
         console.log(details.value.length);
@@ -676,8 +889,9 @@
         loading.value = true;
 
         let fecha_emision = format_fechaEmision(fechaEmision.value)
-
+        let fechatrasl = format_fechaEmision(fechainic.value);
         console.log(fecha_emision);
+        console.log(fechatrasl);
 
         data_create = {
             version: version.value,
@@ -686,13 +900,14 @@
             correlativo:correlativo.value,
             fechaEmision:fecha_emision,
             idsucursal:idsucursal.value,
+            areatrabajo:areatrabajo.value.name,
             company:{
                 idCompany:idCompany.value,
                 ruc:companyruc.value,
                 razonSocial:companyname.value,
                 nombreComercial:"Corimayo",
                 address:{
-                    ubigueo:companyubigueo.value,
+                    ubigeo:companyubigeo.value,
                     departamento:companydepartamento.value,
                     provincia:companyprovincia.value,
                     distrito:companydistrito.value,
@@ -707,7 +922,7 @@
                 numDoc:documento.value,
                 rzSocial:destinatario.value,
                 address:{
-                    ubigueo:"150141",
+                    ubigeo:"150141",
                     departamento:"LIMA",
                     provincia:"LIMA",
                     distrito:"SURQUILLO",
@@ -720,37 +935,30 @@
             envio:{
                 codtraslado:motTraslado.value.id,
                 modtraslado:modTraslado.value.id,
-                fecTraslado: fechainic.value,
+                fecTraslado: fechatrasl,
                 pesoTotal: pesoTotal.value,
                 undPesoTotal: unidadmedida.value.id,
                 llegada:{
-                    ubigueo :ubigueoLlegada.value,
+                    ubigeo :ubigeoLlegada.value,
                     direccion: direccionLlegada.value,
                     codLocal: codLocalLlegada.value,
+                    nomlocal: unidadMinLlegada.value,
                     ruc: rucLlegada.value
 
                 },
                 partida:{
-                    ubigueo:ubigueoPartida.value,
+                    ubigeo:ubigeoPartida.value,
                     direccion: direccionPartida.value,
                     codLocal: codLocalpartida.value,
+                    nomlocal: unidadMinPartida.value,
                     ruc: rucPartida.value
                  
                 },
                 choferes:[
-                    {
-                        tipoDoc : tipodocConductor.value.id,
-                        nroDoc: nroDocConductor.value,
-                        licencia: licenciaConductor.value,
-                        nombres: nombreConductor.value,
-                        apellidos: apellidosConductor.value 
-                    }
+                    conductor.value
                 ],
                 vehiculos:[
-                    {
-                        placa : placa.value,
-                        mtcCirculacion : mtcCirculacion.value
-                    }
+                    vehiculo.value
                 ],
 
                 transportista:{
@@ -764,14 +972,19 @@
             details           
         };
 
+     
+
         const resp = await guiaService.SaveDespatch(data_create);
+
         console.log(resp.request['status']);
         console.log(resp.request);
         console.log(resp.data);
         if(resp.request.status == 200) {
             blocked.value = false;
             loading.value = false;
+            resetform();
             showAlert('success',resp.data.mensaje,'Guia de remision registrada con exito');
+
         }else if(resp.request.status == 500){
             blocked.value = false;
             loading.value = false;
@@ -780,195 +993,41 @@
             blocked.value = false;
             loading.value = false;
             showAlert('error','Error desconocido','No se logro registrar la guia de remision, ocurrio un erro comuniquese con soporte');
-        } 
+        }
+
+        console.log('save');
+        blocked.value = false;
+            loading.value = false;
+
     }
     
-
-    const senddespatch = async () => {
-        format_fecha();//fecha inicio traslado
-    //let datos = new Object();   
-        data_create = {
-            version: version.value,
-            tipoDoc:tipos_doc_auth.value,
-            serie:serie.value,
-            correlativo:correlativo.value,
-            fechaEmision:hoy.toISOString(),
-            company:{
-                ruc:companyruc.value,
-                razonSocial:companyname.value,
-                nombreComercial:"corimayo",
-                address:{
-                    ubigueo:companyubigueo.value,
-                    departamento:companydepartamento.value,
-                    provincia:companyprovincia.value,
-                    distrito:companydistrito.value,
-                    urbanizacion:companyurbanizacion.value,
-                    direccion:companydireccion.value,
-                    codLocal:companycodLocal.value,
-                }
-            },
-            destinatario:{
-                tipoDoc:tipodoc.value.id,
-                numDoc:documento.value,
-                rzSocial:destinatario.value,
-                address:{
-                    ubigueo:"150141",
-                    departamento:"LIMA",
-                    provincia:"LIMA",
-                    distrito:"SURQUILLO",
-                    urbanizacion:"-",
-                    direccion:"Calle Albert Einstein 334",
-                    codLocal:"0008"
-                }
-            },
-        
-            envio:{
-                codtraslado:motTraslado.value.id,
-                modtraslado:modTraslado.value.id,
-                fecTraslado: fechainic.value,
-                pesoTotal: pesoTotal.value,
-                undPesoTotal: unidadmedida.value.id,
-                llegada:{
-                    ubigueo :ubigueoLlegada.value,
-                    direccion: direccionLlegada.value,
-                    codLocal: codLocalLlegada.value,
-                    ruc: rucLlegada.value
-
-                },
-                partida:{
-                    ubigueo:ubigueoPartida.value,
-                    direccion: direccionPartida.value,
-                    codLocal: codLocalpartida.value,
-                    ruc: rucPartida.value
-                 
-                },
-                choferes:[
-                    {
-                        tipoDoc : tipodocConductor.value.id,
-                        nroDoc: nroDocConductor.value,
-                        licencia: licenciaConductor.value,
-                        nombres: nombreConductor.value,
-                        apellidos: apellidosConductor.value 
-                    }
-                ],
-                vehiculos:[
-                    {
-                        placa : placa.value
-                    }
-                ]
-            },
-
-            details           
-        };
-
-        const resp = await guiaService.SendDespatch(data_create);
-        console.log(resp)
-    };
-
-    const xmldespatch = async () => {
-        format_fecha();//fecha inicio traslado
-    //let datos = new Object();   
-        data_create = {
-            version: version.value,
-            tipoDoc:tipos_doc_auth.value,
-            serie:serie.value,
-            correlativo:correlativo.value,
-            fechaEmision:hoy.toISOString(),
-            company:{
-                ruc:companyruc.value,
-                razonSocial:companyname.value,
-                nombreComercial:"corimayo",
-                address:{
-                    ubigueo:companyubigueo.value,
-                    departamento:companydepartamento.value,
-                    provincia:companyprovincia.value,
-                    distrito:companydistrito.value,
-                    urbanizacion:companyurbanizacion.value,
-                    direccion:companydireccion.value,
-                    codLocal:companycodLocal.value,
-                }
-            },
-            destinatario:{
-                tipoDoc:tipodoc.value.id,
-                numDoc:documento.value,
-                rzSocial:destinatario.value,
-                address:{
-                    ubigueo:"150141",
-                    departamento:"LIMA",
-                    provincia:"LIMA",
-                    distrito:"SURQUILLO",
-                    urbanizacion:"-",
-                    direccion:"Calle Albert Einstein 334",
-                    codLocal:"0008"
-                }
-            },
-        
-            envio:{
-                codtraslado:motTraslado.value.id,
-                modtraslado:modTraslado.value.id,
-                fecTraslado: fechainic.value,
-                pesoTotal: pesoTotal.value,
-                undPesoTotal: unidadmedida.value.id,
-                llegada:{
-                    ubigueo :ubigueoLlegada.value,
-                    direccion: direccionLlegada.value,
-                    codLocal: codLocalLlegada.value,
-                    ruc: rucLlegada.value
-                },
-                partida:{
-                    ubigueo:ubigueoPartida.value,
-                    direccion: direccionPartida.value,
-                    codLocal: codLocalpartida.value,
-                    ruc: rucPartida.value
-                },
-                choferes:[//////aquiiii
-                    {
-                        tipoDoc : tipodocConductor.value.id,
-                        nroDoc: nroDocConductor.value,
-                        licencia: licenciaConductor.value,
-                        nombres: nombreConductor.value,
-                        apellidos: apellidosConductor.value 
-                    }
-                ],
-                vehiculos:[
-                    {
-                        placa : placa.value
-                    }
-                ]
-            },
-
-            details           
-        };
-
-        const resp = await guiaService.XmlDespatch(data_create);
-        console.log(resp)
-    };
-
 
     const prevAddItem = async (data) =>{
         validateClean();
 
-        if(descripcion.value.length<1 || selectedumUnitario.value.id.length<1 || selectedEquipos.value == undefined  || (cantidad.value.length<1 || cantidad.value <1 || cantidad.value == undefined) ){
+        if(descripcion.value == undefined || descripcion.value.length<1 || selectedumUnitario.value.id.length<1 || (cantidad.value.length<1 || cantidad.value <1 || cantidad.value == undefined) ){
             validate_detalleproductos.value = true
-            return message_detalleproductos.value = "Validar: campos incompletos, seleccionar equipos y cantidad mayor a 0 "
+            return message_detalleproductos.value = "Campos incompletos, ingresar descripcion, seleccionar equipos y cantidad mayor a 0 "
         }
 
-        let arrayEquipos = selectedEquipos.value.map(function (data){return data.name.toString()})
+        //let arrayEquipos = selectedEquipos.value.map(function (data){return data.name.toString()})
         
         id_artificial.value = id_artificial.value + 1; 
         details.value.push({
             id: id_artificial.value,
             cantidad:cantidad.value,
             unidad:selectedumUnitario.value.id,
-            equipo: arrayEquipos.toString(),
+            //equipo: arrayEquipos.toString(),
+            equipo: (selectedEquipos.value)?selectedEquipos.value.name:'',
             descripcion:descripcion.value,
             codigo:codigo.value
         });
 
-        selectedEquipos.value = "";
+        selectedEquipos.value = {name:null};
         descripcion.value = ""; //CAMBIAR VARIABLE, DECLARARLA COMO INDEPENDIENTE
         codigo.value = "";
         cantidad.value = "";
+        selectedumUnitario.value = {id:'NIU',name:'UNIDAD'};
     }
 
     const RemoveItem = async (data) =>{
@@ -981,119 +1040,136 @@
         }
     }
 
+    const addVehiculo = async () =>{
+        var regex = new RegExp("^[A-Z0-9]+$");
+        var regexNum = new RegExp("^[0-9]+$");
+        if((placa.value.length>=9 || placa.value.length<=5) || !regex.test(placa.value)) {
+            message_placa.value = '(*) Campo obligatorio:Sólo alfanumérico de 6 a 8 caracteres (solo se permiten letras mayúsculas y números, no espacios en blanco ni guion, tampoco se permite solamente ceros).';
+            return validate_placa.value = true;
+        }
 
-    const downloaddespatch = async () => {
+        vehiculo.value.push({
+            placa: placa.value,
+            mtcNroAutorizacion:mtcNroAutorizacion.value,
+            tipo:(vehiculo.value.length<1)?'PRINCIPAL':'SECUNDARIO'
+        });
 
-        format_fecha();//fecha inicio traslado
-    //let datos = new Object();   
-        data_create = {
-            version: version.value,
-            tipoDoc:tipos_doc_auth.value,
-            serie:serie.value,
-            correlativo:correlativo.value,
-            fechaEmision:hoy.toISOString(),
-            company:{
-                ruc:companyruc.value,
-                razonSocial:companyname.value,
-                nombreComercial:"corimayo",
-                address:{
-                    ubigueo:companyubigueo.value,
-                    departamento:companydepartamento.value,
-                    provincia:companyprovincia.value,
-                    distrito:companydistrito.value,
-                    urbanizacion:companyurbanizacion.value,
-                    direccion:companydireccion.value,
-                    codLocal:companycodLocal.value,
-                }
-            },
-            destinatario:{
-                tipoDoc:tipodoc.value.id,
-                numDoc:documento.value,
-                rzSocial:destinatario.value,
-                address:{
-                    ubigueo:"150141",
-                    departamento:"LIMA",
-                    provincia:"LIMA",
-                    distrito:"SURQUILLO",
-                    urbanizacion:"-",
-                    direccion:"Calle Albert Einstein 334",
-                    codLocal:"0008"
-                }
-            },
+        placa.value ='';
+        validate_placa.value = false
+        modaladdvehiculo.value = false
+    }
+
+    const removeitemvehiculo = async (data) =>{
+        console.log(data);
+        for(let list of vehiculo.value){
+            if(list.id==data.id){
+                console.log(list);
+
+                return vehiculo.value.splice(vehiculo.value.indexOf(data),1);
+            }
+        }
         
-            envio:{
-                codtraslado:motTraslado.value.id,
-                modtraslado:modTraslado.value.id,
-                fecTraslado: fechainic.value,
-                pesoTotal: pesoTotal.value,
-                undPesoTotal: unidadmedida.value.id,
-                llegada:{
-                    ubigueo :ubigueoLlegada.value,
-                    direccion: direccionLlegada.value,
-                    codLocal: codLocalLlegada.value,
-                    ruc: rucLlegada.value
-                },
-                partida:{
-                    ubigueo:ubigueoPartida.value,
-                    direccion: direccionPartida.value,
-                    codLocal: codLocalpartida.value,
-                    ruc: rucPartida.value
-                },
-                choferes:[
-                    {
-                        tipoDoc : tipodocConductor.value.id,
-                        nroDoc: nroDocConductor.value,
-                        licencia: licenciaConductor.value,
-                        nombres: nombreConductor.value,
-                        apellidos: apellidosConductor.value 
-                    }
-                ],
-                vehiculos:[
-                    {
-                        placa : placa.value
-                    }
-                ]
-            },
+      
+    }
+    
+    const addConductor = async () =>{
+        var regex = new RegExp("^[A-Z0-9]+$");
+        var regexNum = new RegExp("^[0-9]+$");
 
-            details           
-        };
+        if(tipodocConductor.value.name == 'DNI' && nroDocConductor.value == undefined || ( nroDocConductor.value.length <= 7 || nroDocConductor.value.length >= 9 ) || !regexNum.test(nroDocConductor.value) ){
+            console.log('validacion 1 ')
+            message_nrodocConductor.value = '(*) Campo obligatorio: El dni debe tener 8 caracteres y solo numeros';
+            cleanvalidate_conductor();
+            return validate_nrodocConductor.value = true; 
+        }else if(tipodocConductor.value.name !== 'DNI' || nroDocConductor.value == undefined && (nroDocConductor.value.length <= 7 || nroDocConductor.value.length >= 10 ) || !regexNum.test(nroDocConductor.value)){
+            message_nrodocConductor.value = '(*) Campo obligatorio: El nro de documento no debe ser vacio y solo numero';
+            cleanvalidate_conductor();
+            return validate_nrodocConductor.value = true;
+        }
+        //NOMBRE Y APELLIDO DE CONDUCTOR
+        if( nombreConductor.value == undefined){
+            message_nombreConductor.value = '(*) Campo obligatorio:Ingresar el nombre del conductor';
+            cleanvalidate_conductor();
+            return validate_nombreConductor.value = true; 
+        }
 
-        console.log(data_create);
-        //const resp = await guiaService.DownloadDespatch(data_create);
-        //console.log(resp)
-    };
+        if(apellidosConductor.value.length<1){
+            message_apellidoConductor.value = '(*) Campo obligatorio:Ingresar el apellido del conductor';
+            cleanvalidate_conductor();
+            return validate_apellidoConductor.value = true; 
+        }   
 
-    const create_objet = async () => {
+        //LICENCIA CONDUCTOR
+        console.log(licenciaConductor.value,licenciaConductor.value.length);
+        if(licenciaConductor.value.length <= 8 || licenciaConductor.value.length >= 11 || !regex.test(licenciaConductor.value) ){
+            
+            message_licenciaConductor.value = '(*) Campo obligatorio: El nro de licencia debe ser Alfanumerico y de 9 a 10 caracteres';
+            cleanvalidate_conductor();
+            return validate_licenciaConductor.value = true; 
+        }
 
-        data_create = {
-            destinatario:{
-                tipoDoc:tipodoc.value,
-                numDoc:documento.value,
-                rzSocial:destinatario.value,
-                address:{
-                    ubigueo:"150141",
-                    departamento:"LIMA",
-                    provincia:"LIMA",
-                    distrito:"SURQUILLO",
-                    urbanizacion:"-",
-                    direccion:"Calle Albert Einstein 334",
-                    codLocal:"0008"
-                }
+
+        conductor.value.push({
+            tipoDoc: tipodocConductor.value,
+            nroDoc:nroDocConductor.value,
+            nombres:nombreConductor.value,
+            apellidos:apellidosConductor.value,
+            licencia:licenciaConductor.value,
+            tipo:(conductor.value.length<1)?'PRINCIPAL':'SECUNDARIO'
+        });
+
+        cleanvalidate_conductor();
+
+        nroDocConductor.value="";
+        nombreConductor.value="";
+        apellidosConductor.value="";
+        licenciaConductor.value="";
+
+        modaladdconductor.value = false
+    } 
+    
+    const cleanvalidate_conductor = () => {
+        validate_nrodocConductor.value = false
+        validate_licenciaConductor.value = false
+        validate_nombreConductor.value = false
+        validate_apellidoConductor.value = false
+    }
+
+    
+    const cancelConductor = ()=>{
+
+        validate_nrodocConductor.value = false
+        validate_licenciaConductor.value = false
+        validate_nombreConductor.value = false
+        validate_apellidoConductor.value = false
+
+        nroDocConductor.value="";
+        nombreConductor.value="";
+        apellidosConductor.value="";
+        licenciaConductor.value="";
+
+        modaladdconductor.value = false
+    }
+
+    const removeitemconductor = async (data) =>{
+        console.log(data);
+        for(let list of conductor.value){
+            if(list.id==data.id){
+                console.log(list);
+                return conductor.value.splice(conductor.value.indexOf(data),1);
             }
         }
 
-        console.log(data_create)
+     }
+    
 
-        return data_create;
-    }
-        
+       
     const format_fecha = (date) => {
 
         let tzoffset = (new Date(date)).getTimezoneOffset() * 60000;
         let localISOTime   = (new Date(date - tzoffset)).toISOString().slice(0, -1);//offset in milliseconds
         let fecha = new Date(localISOTime);
         return `${fecha.getFullYear()}-${fecha.getMonth()}-${fecha.getDate()}`
-      
     }
 
     const format_fechaEmision = (date) => {
@@ -1111,14 +1187,14 @@
        if(motTraslado.value['id'] == '04' && valor == 'partida') {
             console.log('partida');
             direccionPartida.value = anexoPartida.value['direccion'];
-            ubigueoPartida.value = anexoPartida.value['ubigueo'];
+            ubigeoPartida.value = anexoPartida.value['ubigeo'];
             unidadMinPartida.value = anexoPartida.value['nombre'];
             codLocalpartida.value = anexoPartida.value['codLocal'];
             rucPartida.value = anexoPartida.value['ruc'];
         }else if(motTraslado.value['id'] == '04' && valor == 'llegada'){
 
             direccionLlegada.value = anexoLlegada.value['direccion']
-            ubigueoLlegada .value = anexoLlegada.value['ubigueo']
+            ubigeoLlegada .value = anexoLlegada.value['ubigeo']
             unidadMinLlegada.value = anexoLlegada.value['nombre']
             codLocalLlegada.value = anexoLlegada.value['codLocal']
             rucLlegada.value = anexoLlegada.value['ruc'];
@@ -1158,9 +1234,8 @@
                     codigo:row[1]
                 });
             });
-
-        
             console.log(details.value);
+            visible.value = false;
         })
     }
 
@@ -1195,18 +1270,39 @@
         validate_pesoTotal.value = false
         validate_fechainic.value = false
         validate_placa.value = false
-        validate_nrodocConductor.value = false
-        validate_licenciaConductor.value = false
+
         validate_direccionpartida.value = false
-        validate_ubigueopartida.value = false
+        validate_ubigeopartida.value = false
         validate_direccionllegada.value = false
-        validate_ubigueollegada.value = false
+        validate_ubigeollegada.value = false
         validate_detalleproductos.value = false
-        validate_nombreConductor.value = false
-        validate_apellidoConductor.value = false
+
         validate_numDocTransp.value = false
         validate_rzSocialTransp.value = false
         
+    }
+
+    const resetform = () =>{
+        pesoTotal.value = "";
+        placa.value = "";
+        mtcNroAutorizacion.value="";
+       
+        numDocTransp.value="";
+        rzSocialTransp.value="";
+        nroMtcTransp.value="";
+        direccionPartida.value="";
+        ubigeoPartida.value="";
+        unidadMinPartida.value="";
+        codLocalpartida.value="";
+        rucPartida.value="";
+        direccionLlegada.value="";
+        ubigeoLlegada.value="";
+        unidadMinLlegada.value="";
+        codLocalLlegada.value="";
+        rucLlegada.value="";
+        anexoPartida.value="";
+        anexoLlegada.value="";
+        details.value={};
     }
 
 </script>
